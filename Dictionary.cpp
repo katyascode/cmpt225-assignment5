@@ -7,8 +7,8 @@
  *                    collision resolution strategy called linear probing hashing.             
  * Class Invariant: Each element stored in this Dictionary is unique (no duplications allowed).
  *
- * Author: AL
- * Date: Last modified: Nov. 2023
+ * Author: AL & Katya Kubyshkin
+ * Date: Last modified: Dec. 2 2023
  */
 
 // You can add more #include statements if you wish.
@@ -74,13 +74,13 @@ unsigned int Dictionary::hashFunction( string indexingKey ) {
 
   // Begin folding process. 
   for ( unsigned int i = 0; i < length; i += chunkSize ) {
-    unsigned int chunkInt = 0; 
-    // For each chunk of 4 digits, multiply the value by 10 and add the subsequent digit into the 1's slot. 
+    unsigned int chunkSum = 0; 
+    // For each chunk of 2 digits, multiply the value by 10 and add the subsequent digit into the 1's slot. 
     for ( unsigned int j = 0; j < chunkSize; j++ ) {
-      chunkInt = chunkInt*10 + (indexingKey[i + j] - '0');
+      chunkSum = chunkSum*10 + (indexingKey[i + j] - '0');
     }
-    // Once comptutation of each chunk of 4 is complete, add the chunk to a running total. 
-    hashCode += chunkInt; 
+    // Once comptutation of each chunk of 2 is complete, add the chunk to a running total. 
+    hashCode += chunkSum; 
   }
 
   return hashCode % CAPACITY; 
@@ -98,13 +98,15 @@ void Dictionary::insert( Profile * newElement )  {
     throw UnableToInsertException("Error. Hash table full.");
   }
 
+  // Check if hashTable exists before performing any operations.
   if (hashTable == nullptr) {
     hashTable = new Profile * [CAPACITY]();
   }
 
-  // Base case: Check that the element does not already exist in the hash table by computing its hash value. 
+  // Compute hashCode 
   unsigned int hashCode = hashFunction( newElement->getUserName() );
 
+  // Base case: Check that the element does not already exist in the hash table
   if ( hashTable[hashCode] == nullptr ) {
     // Insert the element
     hashTable[hashCode] = newElement; 
@@ -118,7 +120,7 @@ void Dictionary::insert( Profile * newElement )  {
 
     // Beginning linear search. At each probe, check that the element does not already exist in the given slot. 
     for (unsigned int i = 0; i < CAPACITY; i++) {
-      hashCode = (hashCode + i + 1) % CAPACITY;
+      hashCode = (hashCode + 1) % CAPACITY;
 
       if (hashTable[hashCode] == nullptr) {
         // Insert element at the empty slot
@@ -143,31 +145,29 @@ void Dictionary::insert( Profile * newElement )  {
 // Exception: Throws ElementDoesNotExistException if target is not found in the Dictionary.
 Profile * Dictionary::get( Profile & target )  {
   // Check for capacity. 
-  if (elementCount == 0) {
+  if (elementCount == 0 || hashTable == nullptr) {
     throw EmptyDataCollectionException("Error: element cannot be found in an empty dataset");
   } 
 
   // Compute hash index 
   unsigned int hashCode = hashFunction( target.getUserName() );
 
-
-  if ( hashTable[hashCode]->getUserName() == target.getUserName() ) {
-    // Element found in computed index. Return pointer stored in index.
-    return hashTable[hashCode];
-
-  } else if ( hashTable[hashCode] == nullptr ) {
+  // Check computed index 
+  if ( hashTable[hashCode] == nullptr ) {
     // Element is not in the table 
     throw ElementDoesNotExistException("Element not found");
 
   } else {
     // Perform a linear search 
     for ( unsigned int i = 0; i < CAPACITY; i++ ) {
-      hashCode = ( hashCode + i + 1 ) % CAPACITY;
+      hashCode = ( hashCode + 1 ) % CAPACITY;
 
       if ( hashTable[hashCode]->getUserName() == target.getUserName() ) {
         return hashTable[hashCode];
       }
     }
+
+    throw ElementDoesNotExistException("Element does not exist in the hash table");
   }
 
   return nullptr; 
