@@ -155,22 +155,29 @@ Profile * Dictionary::get( Profile & target )  {
   // Check computed index 
   if ( hashTable[hashCode] == nullptr ) {
     // Element is not in the table 
-    throw ElementDoesNotExistException("Element not found");
+    throw ElementDoesNotExistException("Element does not exist");
 
   } else {
     // Perform a linear search 
     for ( unsigned int i = 0; i < CAPACITY; i++ ) {
+      
       hashCode = ( hashCode + 1 ) % CAPACITY;
 
+      // Check index for nullity
+      if ( hashTable[hashCode] == nullptr ) {
+        throw ElementDoesNotExistException("Element does not exist");
+      }
+      
+      // Proceed to comparison if not null. 
       if ( hashTable[hashCode]->getUserName() == target.getUserName() ) {
         return hashTable[hashCode];
       }
     }
 
-    throw ElementDoesNotExistException("Element does not exist in the hash table");
+    throw ElementDoesNotExistException("Element does not exist");
   }
 
-  return nullptr; 
+  return nullptr;
 }
    
 // Description: Prints all elements stored in the Dictionary (unsorted).
