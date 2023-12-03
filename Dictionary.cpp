@@ -69,7 +69,8 @@ unsigned int Dictionary::hashFunction( string indexingKey ) {
   // Approach: folding. 
   
   // Initialize variables for readiability. 
-  unsigned int hashCode = 0, chunkSize = 4, length = 16;
+  unsigned int hashCode = 0, chunkSize = 2, length = 16; // After experimentation with chunk sizes of 1, 2, 4, 8 and 16, 
+                                                         // A chunk size of 2 yielded the most even distribution.
 
   // Begin folding process. 
   for ( unsigned int i = 0; i < length; i += chunkSize ) {
@@ -97,6 +98,10 @@ void Dictionary::insert( Profile * newElement )  {
     throw UnableToInsertException("Error. Hash table full.");
   }
 
+  if (hashTable == nullptr) {
+    hashTable = new Profile * [CAPACITY]();
+  }
+
   // Base case: Check that the element does not already exist in the hash table by computing its hash value. 
   unsigned int hashCode = hashFunction( newElement->getUserName() );
 
@@ -119,7 +124,7 @@ void Dictionary::insert( Profile * newElement )  {
         // Insert element at the empty slot
         hashTable[hashCode] = newElement;
         elementCount++;
-        break;  // Exit the loop after successful insertion
+        return;  // Exit the loop after successful insertion
       } else if (hashTable[hashCode]->getUserName() == newElement->getUserName()) {
         // Profile with the same username found, throw an exception
         throw ElementAlreadyExistsException("Element already exists. Cannot insert.");
